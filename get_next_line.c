@@ -12,6 +12,15 @@
 
 #include "get_next_line.h"
 
+void	ft_freestring(char **s)
+{
+	if (!s || !*s)
+		return ;
+	free(*s);
+	*s = 0;
+	return ;
+}
+
 char	*write_after_n(char *end_of_line)
 {
 	char	*line;
@@ -31,11 +40,10 @@ char	*write_after_n(char *end_of_line)
 	while (end_of_line[i])
 		line[j++] = end_of_line[i++];
 	line[j] = '\0';
-	if (end_of_line)
-		free(end_of_line);
+	ft_freestring(&end_of_line);
 	if (line[0] == '\0')
 	{
-		free(line);
+		ft_freestring(&line);
 		return (NULL);
 	}
 	return (line);
@@ -63,7 +71,7 @@ char	*write_before_n(char *end_of_line)
 	itm[j] = '\0';
 	if (itm[0] == '\0')
 	{
-		free(itm);
+		ft_freestring(&itm);
 		return (NULL);
 	}
 	return (itm);
@@ -73,28 +81,27 @@ char	*file_read(int fd, char *end_of_line, char *buff)
 {
 	char	*tmp;
 	int		read_byte;
+	int		flag;
 
 	read_byte = 1;
 	tmp = NULL;
+	flag = 0;
 	while (read_byte && !(ft_strchr(end_of_line, '\n')))
 	{
-		tmp = end_of_line;
 		read_byte = read(fd, buff, BUFFER_SIZE);
 		if (read_byte < 0 || !buff)
 		{
-			if (end_of_line)
-				free(end_of_line);
+			ft_freestring(&end_of_line);
 			return (NULL);
 		}
 		buff[read_byte] = '\0';
-		if (!buff)
-			return (NULL);
+		if (end_of_line != NULL)
+			tmp = end_of_line;
 		if (!end_of_line)
 			end_of_line = ft_strdup(buff);
 		else
 			end_of_line = ft_strjoin(end_of_line, buff);
-		if (tmp)
-			free(tmp);
+		ft_freestring(&tmp);
 	}
 	return (end_of_line);
 }
@@ -106,51 +113,23 @@ char	*get_next_line(int fd)
 	char		*buff;
 
 	line = NULL;
-	if (fd < 0 || BUFFER_SIZE < 1)
+	if (!end_of_line)
+		end_of_line = NULL;
+	if (fd < 0 || read(fd, 0, 0) < 0 || BUFFER_SIZE < 1)
 		return (NULL);
 	buff = malloc((BUFFER_SIZE + 1) * sizeof(char));
 	if (!buff)
 		return (NULL);
 	end_of_line = file_read(fd, end_of_line, buff);
-	if (buff)
-		free(buff);
-	if (!end_of_line)
-		return (NULL);
+	ft_freestring(&buff);
 	line = write_before_n(end_of_line);
 	if (!line)
 	{
-		if (end_of_line)
-			free(end_of_line);
+		ft_freestring(&line);
+		ft_freestring(&end_of_line);
 		return (NULL);
 	}
 	end_of_line = write_after_n(end_of_line);
 	return (line);
 }
 
-// int	main(void)
-// {
-// 	char	*line;
-// 	int		fd;
-
-// 	fd = open("empty", O_RDONLY);
-
-// 	line = get_next_line(fd);
-// 	printf("!-! 1 line !-! %s", line);
-// 	line = get_next_line(fd);
-// 	printf("!-! 2 line !-! %s", line);
-// 	line = get_next_line(fd);
-// 	printf("!-! 3 line !-! %s", line);
-// 	line = get_next_line(fd);
-// 	printf("!-! 4 line !-! %s", line);
-// 	line = get_next_line(fd);
-// 	printf("!-! 5 line !-! %s", line);
-// 	line = get_next_line(fd);
-// 	printf("!-! 6 line !-! %s", line);
-// 	line = get_next_line(fd);
-// 	printf("!-! 7 line !-! %s", line);
-// 	line = get_next_line(fd);
-// 	printf("!-! 8 line !-! %s", line);
-// 	line = get_next_line(fd);
-// 	printf("!-! 9 line !-! %s", line);
-// 	return (0);
-// }
