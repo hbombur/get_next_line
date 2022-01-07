@@ -125,7 +125,6 @@ char	*get_next_line(int fd)
 	line = write_before_n(end_of_line);
 	if (!line)
 	{
-		ft_freestring(&line);
 		ft_freestring(&end_of_line);
 		return (NULL);
 	}
